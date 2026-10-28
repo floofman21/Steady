@@ -1,8 +1,8 @@
 // The prototype's sample org, ported call-for-call from its generator so the
 // seeded data (and therefore the KPIs) match the prototype exactly.
-// Local and preview only — never import this from app code.
+// Used by `pnpm db:seed` and by HR admins' "Load sample data" (lib/sample.ts).
 
-import { computeIndices, type Answers } from "../lib/scoring";
+import { computeIndices, type Answers } from "@/lib/scoring";
 
 export const SAMPLE_WEEKS = 8;
 

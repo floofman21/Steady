@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
-import { connection } from "next/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import { auth } from "@/auth";
 import { db, schema } from "@/lib/db";
 
 export type Viewer = {
@@ -9,26 +9,16 @@ export type Viewer = {
   org: typeof schema.organizations.$inferSelect;
 };
 
-/**
- * The signed-in person.
- *
- * PHASE 1 STUB: there is no auth yet, so this returns the org's first HR admin
- * (the seed creates one). Phase 3 replaces the body with the Auth.js session
- * lookup and redirects to /sign-in when there is no linked person.
- */
+/** The signed-in person: the session's email matched to an active row in `people`. */
 export const getViewer = cache(async (): Promise<Viewer | null> => {
-  // Always render per request (the session cookie will do this from Phase 3).
-  await connection();
+  const session = await auth();
+  const email = session?.user?.email?.toLowerCase();
+  if (!email) return null;
   const rows = await db
     .select({ person: schema.people, org: schema.organizations })
     .from(schema.people)
     .innerJoin(schema.organizations, eq(schema.organizations.id, schema.people.orgId))
-    .where(eq(schema.people.role, "hr_admin"))
+    .where(and(eq(schema.people.email, email), eq(schema.people.active, true)))
     .limit(1);
   return rows[0] ?? null;
 });
-
-/** Managers and HR admins see the dashboard and feed; everyone else only checks in. */
-export function canSeeDashboard(viewer: Viewer) {
-  return viewer.person.role === "manager" || viewer.person.role === "hr_admin";
-}

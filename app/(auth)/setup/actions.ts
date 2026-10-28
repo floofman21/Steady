@@ -33,5 +33,5 @@ export async function createOrganization(_prev: SetupState, formData: FormData):
   });
 
   if (!created) return { error: "Steady is already set up. Reload the page to continue." };
-  redirect("/dashboard");
+  redirect("/sign-in?setup=1");
 }

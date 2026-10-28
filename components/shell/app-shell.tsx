@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { LogOut, Minus, Monitor, Moon, PanelLeft, Sun } from "lucide-react";
+import { signOutAction } from "@/app/(auth)/sign-in/actions";
 import { Logo } from "./logo";
 import { titleFor } from "./nav";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
@@ -167,15 +168,16 @@ function SidebarContent({
           <small className="text-xs text-muted-foreground">{user.subtitle}</small>
         </div>
         <ThemeToggle />
-        {/* Phase 3 wires this to Auth.js signOut(). */}
-        <Link
-          href="/sign-in"
-          aria-label="Sign out"
-          title="Sign out"
-          className="grid size-8 place-items-center rounded-[7px] text-muted-foreground hover:bg-surface hover:text-foreground"
-        >
-          <LogOut className="size-4" />
-        </Link>
+        <form action={signOutAction}>
+          <button
+            type="submit"
+            aria-label="Sign out"
+            title="Sign out"
+            className="grid size-8 place-items-center rounded-[7px] text-muted-foreground hover:bg-surface hover:text-foreground"
+          >
+            <LogOut className="size-4" />
+          </button>
+        </form>
       </div>
     </>
   );

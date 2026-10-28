@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/shell/app-shell";
 import { navFor } from "@/components/shell/nav";
-import { countAtRisk } from "@/lib/queries";
-import { canSeeDashboard, getViewer } from "@/lib/viewer";
+import { countVisibleAtRisk } from "@/lib/dashboard";
+import { canSeeDashboard } from "@/lib/permissions";
+import { getViewer } from "@/lib/viewer";
 import { formatWeekLong, weekStartOf } from "@/lib/week";
 
 const ROLE_LABEL = { employee: "Employee", manager: "Manager", hr_admin: "HR admin" } as const;
@@ -12,7 +13,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   if (!viewer) redirect("/sign-in");
   const { person, org } = viewer;
 
-  const atRisk = canSeeDashboard(viewer) ? await countAtRisk(org.id) : 0;
+  const atRisk = canSeeDashboard(viewer) ? await countVisibleAtRisk(viewer) : 0;
   const nav = navFor(person.role).map((item) => ({
     href: item.href,
     label: item.label,

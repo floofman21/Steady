@@ -40,6 +40,8 @@ export const departments = pgTable(
       .notNull()
       .references(() => organizations.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
+    /** Created by "Load sample data"; removed with it. */
+    isSample: boolean("is_sample").notNull().default(false),
   },
   (t) => [uniqueIndex("departments_org_name_idx").on(t.orgId, t.name)],
 );
@@ -76,6 +78,8 @@ export const people = pgTable(
     email: text("email").notNull(),
     role: roleEnum("role").notNull().default("employee"),
     active: boolean("active").notNull().default(true),
+    /** Created by "Load sample data"; removed with it. */
+    isSample: boolean("is_sample").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [

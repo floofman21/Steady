@@ -1,34 +1,6 @@
 import "server-only";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
-import { computeIndices, isAtRisk } from "@/lib/scoring";
-
-/**
- * Latest check-in for every active person in the org.
- * Phase 3 narrows this to the people the viewer may see (lib/permissions.ts).
- */
-export async function latestCheckins(orgId: string) {
-  const { checkins, people } = schema;
-  return db
-    .selectDistinctOn([checkins.personId], {
-      personId: checkins.personId,
-      weekStart: checkins.weekStart,
-      mood: checkins.mood,
-      energy: checkins.energy,
-      stress: checkins.stress,
-      workload: checkins.workload,
-      belonging: checkins.belonging,
-    })
-    .from(checkins)
-    .innerJoin(people, eq(people.id, checkins.personId))
-    .where(and(eq(people.orgId, orgId), eq(people.active, true)))
-    .orderBy(checkins.personId, sql`${checkins.weekStart} desc`);
-}
-
-export async function countAtRisk(orgId: string) {
-  const rows = await latestCheckins(orgId);
-  return rows.filter((r) => isAtRisk(computeIndices(r))).length;
-}
 
 /** People with a check-in in `weekStart` ÷ active people. */
 export async function participation(orgId: string, weekStart: string) {
@@ -62,6 +34,15 @@ export async function hasAnyCheckins(orgId: string) {
     .from(checkins)
     .innerJoin(people, eq(people.id, checkins.personId))
     .where(eq(people.orgId, orgId))
+    .limit(1);
+  return Boolean(row);
+}
+
+export async function hasSampleData(orgId: string) {
+  const [row] = await db
+    .select({ id: schema.people.id })
+    .from(schema.people)
+    .where(and(eq(schema.people.orgId, orgId), eq(schema.people.isSample, true)))
     .limit(1);
   return Boolean(row);
 }

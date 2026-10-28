@@ -5,12 +5,18 @@ import { execSync } from "node:child_process";
 const run = (cmd) => execSync(cmd, { stdio: "inherit" });
 
 if (process.env.CONTEXT === "production") {
-  if (!process.env.DATABASE_URL) {
-    console.error(
-      "DATABASE_URL is not set. Add your Neon connection string under Project configuration → " +
-        "Environment variables (scope: Builds and Functions), then redeploy.",
-    );
-    process.exit(1);
+  const missing = {
+    DATABASE_URL: "your Neon connection string",
+    AUTH_SECRET: "a random secret (run `openssl rand -base64 32`)",
+  };
+  for (const [name, what] of Object.entries(missing)) {
+    if (!process.env[name]) {
+      console.error(
+        `${name} is not set. Add ${what} under Project configuration → Environment variables ` +
+          "(scopes: Builds and Functions), then redeploy.",
+      );
+      process.exit(1);
+    }
   }
   run("pnpm drizzle-kit migrate");
 } else {

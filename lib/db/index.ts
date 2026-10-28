@@ -8,7 +8,7 @@ type Db = ReturnType<typeof drizzle<typeof schema>>;
 // Reused across hot reloads in dev. `prepare: false` keeps it safe behind Neon's pooler.
 const globalForDb = globalThis as unknown as { steadyDb?: Db };
 
-function getDb(): Db {
+export function getDb(): Db {
   if (!globalForDb.steadyDb) {
     const url = process.env.DATABASE_URL;
     if (!url) throw new Error("DATABASE_URL is not set.");

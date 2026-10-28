@@ -21,7 +21,7 @@ export default async function SetupPage() {
         </div>
         <h1 className="mb-1 font-display text-[24px] font-semibold tracking-[-0.01em]">Set up your organization</h1>
         <p className="mb-6 text-muted-foreground">
-          You’ll be the first HR admin. You can add your teams and people afterwards. This screen only appears once.
+          You’ll be the first HR admin and sign in with the email below. You can add teams and people afterwards. This screen only appears once.
         </p>
         <SetupForm timezones={Intl.supportedValuesOf("timeZone")} />
       </Card>
