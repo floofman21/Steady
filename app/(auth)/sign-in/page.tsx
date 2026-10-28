@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { Logo } from "@/components/shell/logo";
 import { Card } from "@/components/ui/card";
+import { isSetUp } from "@/lib/setup";
 
 export const metadata: Metadata = { title: "Sign in" };
 
-export default function SignInPage() {
+export default async function SignInPage() {
+  await connection();
+  if (!(await isSetUp())) redirect("/setup");
+
   return (
     <main className="grid min-h-full place-items-center px-4 py-10">
       <Card className="w-full max-w-sm p-6">
@@ -15,7 +21,7 @@ export default function SignInPage() {
         </div>
         <h1 className="mb-1 font-display text-[22px] font-semibold">Sign in</h1>
         <p className="mb-5 text-muted-foreground">
-          Google and Microsoft sign-in arrive in phase 3. Until then the app runs as the seeded HR admin.
+          Google and Microsoft sign-in arrive in phase 3. Until then the app runs as your organization’s HR admin.
         </p>
         <Link href="/" className="font-semibold text-brand">
           Continue to Steady →

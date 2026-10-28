@@ -54,3 +54,14 @@ export async function getMyHistory(personId: string, weeks: string[]) {
   const byWeek = new Map(rows.map((r) => [r.weekStart, r]));
   return weeks.map((weekStart) => ({ weekStart, checkin: byWeek.get(weekStart) ?? null }));
 }
+
+export async function hasAnyCheckins(orgId: string) {
+  const { checkins, people } = schema;
+  const [row] = await db
+    .select({ id: checkins.id })
+    .from(checkins)
+    .innerJoin(people, eq(people.id, checkins.personId))
+    .where(eq(people.orgId, orgId))
+    .limit(1);
+  return Boolean(row);
+}
