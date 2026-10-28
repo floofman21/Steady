@@ -16,7 +16,6 @@ Drizzle ORM + drizzle-kit · Auth.js v5 · Resend · Netlify Scheduled Functions
 Requires Node 22+, pnpm 10, and a Postgres 16 database.
 
 ```bash
-cd steady
 pnpm install
 cp .env.example .env          # used by drizzle-kit and the seed script
 cp .env.example .env.local    # used by Next.js
@@ -34,7 +33,7 @@ prototype. Its last week is anchored to the current week. **It deletes all org d
 | Script | Does |
 | --- | --- |
 | `pnpm dev` / `pnpm build` / `pnpm start` | Next.js |
-| `pnpm lint` / `pnpm typecheck` | ESLint / `tsc --noEmit` |
+| `pnpm lint` / `pnpm typecheck` | ESLint / route types + `tsc --noEmit` |
 | `pnpm test` | Vitest unit tests (scoring, weeks, check-in validation) |
 | `pnpm db:generate` | Generate a migration from `lib/db/schema.ts` into `/drizzle` |
 | `pnpm db:migrate` | Apply pending migrations |
