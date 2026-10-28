@@ -35,16 +35,15 @@ prototype. Its last week is anchored to the current week. **It deletes all org d
 | `pnpm dev` / `pnpm build` / `pnpm start` | Next.js |
 | `pnpm lint` / `pnpm typecheck` | ESLint / route types + `tsc --noEmit` |
 | `pnpm test` | Vitest unit tests (scoring, weeks, check-in validation) |
-| `pnpm db:generate` | Generate a migration from `lib/db/schema.ts` into `/drizzle` |
-| `pnpm db:migrate` | Apply pending migrations |
+| `pnpm db:generate` | Generate a migration from `lib/db/schema.ts` (into `/drizzle` and `netlify/database/migrations`) |
+| `pnpm db:migrate` | Apply pending migrations to your local database |
 | `pnpm db:seed` | Replace all data with the sample org (local and preview only) |
 
 ## Environment variables
 
 | Name | Used for | Phase |
 | --- | --- | --- |
-| `DATABASE_URL` | Pooled Postgres URL for the app (injected by the Neon integration) | 1 |
-| `DATABASE_URL_UNPOOLED` | Direct URL for `drizzle-kit migrate` (falls back to `DATABASE_URL`) | 1 |
+| `DATABASE_URL` | Postgres URL. Needed locally; on Netlify leave it unset and Netlify Database's `NETLIFY_DB_URL` is used | 1 |
 | `AUTH_SECRET` | Auth.js session encryption | 3 |
 | `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | Google sign-in | 3 |
 | `AUTH_MICROSOFT_ENTRA_ID_ID`, `AUTH_MICROSOFT_ENTRA_ID_SECRET`, `AUTH_MICROSOFT_ENTRA_ID_ISSUER` | Microsoft sign-in | 3 |
@@ -56,14 +55,15 @@ prototype. Its last week is anchored to the current week. **It deletes all org d
 
 1. In Netlify: **Add new project → Import an existing project → GitHub**, and pick this repo. Netlify reads
    `netlify.toml` and builds Next.js with its OpenNext adapter; no other build settings are needed.
-2. Add a database: **Extensions → Netlify DB** (Neon Postgres). It injects `NETLIFY_DATABASE_URL` (pooled) and
-   `NETLIFY_DATABASE_URL_UNPOOLED` (direct), which the app and drizzle-kit pick up automatically. Any external
-   Postgres works too: set `DATABASE_URL` instead.
-3. Add the remaining env vars above under **Project configuration → Environment variables** as each phase needs them.
-4. The build runs `scripts/netlify-build.mjs`: `drizzle-kit migrate` on production deploys (`CONTEXT=production`),
-   then `next build`. Deploy previews skip migrations.
-5. To load sample data, run `pnpm db:seed` locally with `DATABASE_URL` pointing at a non-production database.
-6. Phase 5's weekly reminder and digest jobs will run as Netlify Scheduled Functions.
+2. Database: open the project's **Database** page in the Netlify dashboard and create one if it isn't there already
+   (the `@netlify/database` dependency lets Netlify provision it). Netlify sets `NETLIFY_DB_URL`, which the app uses
+   automatically.
+3. Migrations: Netlify applies `netlify/database/migrations/*.sql` before each deploy goes live; deploy previews get
+   their own database branch. After changing `lib/db/schema.ts`, run `pnpm db:generate --name <change>`: it writes
+   the migration to `drizzle/` and copies it into `netlify/database/migrations/`. Commit both. Never run
+   `drizzle-kit migrate` or `push` against a Netlify-hosted database.
+4. Add the remaining env vars above under **Project configuration → Environment variables** as each phase needs them.
+5. Phase 5's weekly reminder and digest jobs will run as Netlify Scheduled Functions.
 
 ## Layout
 
@@ -88,7 +88,8 @@ components/
   checkin/               Check-in form and 1–5 scale
   shared/                Trend chart, index colors
 scripts/
-  seed.ts, sample-data.ts, netlify-build.mjs
+  seed.ts, sample-data.ts, sync-netlify-migrations.mjs
 tests/                   Vitest
-drizzle/                 Migrations
+drizzle/                 drizzle-kit migrations + snapshots
+netlify/database/migrations/  Copies Netlify applies on deploy
 ```

@@ -1,16 +1,33 @@
+import { getConnectionString } from "@netlify/database";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
 
-// Netlify DB (Neon) provides NETLIFY_DATABASE_URL; DATABASE_URL wins when both are set.
-const url = process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL;
-if (!url) throw new Error("DATABASE_URL (or NETLIFY_DATABASE_URL) is not set");
+type Db = ReturnType<typeof drizzle<typeof schema>>;
 
-// Reuse one client across hot reloads in dev. `prepare: false` keeps this safe
-// behind Neon's pooled (PgBouncer) connection string.
-const globalForDb = globalThis as unknown as { steadySql?: postgres.Sql };
-const client = globalForDb.steadySql ?? postgres(url, { prepare: false, max: 5 });
-if (process.env.NODE_ENV !== "production") globalForDb.steadySql = client;
+/** DATABASE_URL wins; on Netlify, Netlify Database provides NETLIFY_DB_URL. */
+function connectionString() {
+  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
+  try {
+    return getConnectionString();
+  } catch {
+    throw new Error("No database configured: set DATABASE_URL, or add Netlify Database to the project.");
+  }
+}
 
-export const db = drizzle(client, { schema });
+// Created on first query, not at import, so builds don't need database access.
+// Reused across hot reloads in dev. `prepare: false` keeps it safe behind a pooler.
+const globalForDb = globalThis as unknown as { steadyDb?: Db };
+
+function getDb(): Db {
+  if (!globalForDb.steadyDb) {
+    const client = postgres(connectionString(), { prepare: false, max: 5 });
+    globalForDb.steadyDb = drizzle(client, { schema });
+  }
+  return globalForDb.steadyDb;
+}
+
+export const db = new Proxy({} as Db, {
+  get: (_target, prop) => Reflect.get(getDb(), prop),
+});
 export { schema };

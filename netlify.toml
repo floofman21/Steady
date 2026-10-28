@@ -1,6 +1,7 @@
 # Netlify builds Next.js with its OpenNext adapter (detected automatically).
+# Netlify Database applies netlify/database/migrations before each deploy goes live.
 [build]
-  command = "node scripts/netlify-build.mjs"
+  command = "pnpm build"
   publish = ".next"
 
 [build.environment]
