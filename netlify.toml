@@ -1,7 +1,8 @@
 # Netlify builds Next.js with its OpenNext adapter (detected automatically).
-# Netlify Database applies netlify/database/migrations before each deploy goes live.
+# The database is external Postgres (Neon) via DATABASE_URL; production deploys
+# apply migrations from ./drizzle before building.
 [build]
-  command = "pnpm build"
+  command = "node scripts/netlify-build.mjs"
   publish = ".next"
 
 [build.environment]
