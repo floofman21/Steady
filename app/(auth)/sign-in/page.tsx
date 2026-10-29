@@ -47,9 +47,10 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
   const email = providers.find((p) => p.type === "email");
   const error = orphan ? "NotOnRoster" : params.error;
   const ownerCode = ownerCodeEnabled();
+  const ownerCodeTooShort = !ownerCode && Boolean(process.env.OWNER_ACCESS_CODE?.trim());
 
   return (
-    <main className="grid min-h-full place-items-center px-4 py-10">
+    <main className="flex min-h-full flex-col items-center justify-center px-4 py-10">
       <Card className="w-full max-w-sm p-6 sm:p-7">
         <div className="mb-6 flex items-center gap-2.5">
           <Logo />
@@ -154,7 +155,14 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
             )}
           </>
         )}
+        {ownerCodeTooShort && (
+          <p className="mt-4 rounded-md bg-warn-soft px-3 py-2 text-[13px] text-foreground">
+            OWNER_ACCESS_CODE is set but shorter than 16 characters, so the access-code box is hidden. Use a longer
+            code and redeploy.
+          </p>
+        )}
       </Card>
+      <p className="mt-4 text-center font-mono text-[11px] text-faint">Version {process.env.STEADY_VERSION}</p>
     </main>
   );
 }
