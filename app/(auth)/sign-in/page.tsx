@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { isSetUp } from "@/lib/setup";
 import { getViewer } from "@/lib/viewer";
-import { signInWith, signOutAction } from "./actions";
+import { ownerCodeEnabled } from "@/lib/owner-code";
+import { signInWith, signInWithOwnerCode, signOutAction } from "./actions";
 
 export const metadata: Metadata = { title: "Sign in" };
 
@@ -22,6 +23,7 @@ const ERRORS: Record<string, string> = {
   Configuration:
     "Steady couldn’t send or complete the sign-in. If you asked for an email link, the email service refused it: check the email settings, or try again shortly.",
   AccessDenied: "This account isn’t allowed to sign in to Steady.",
+  CodeRejected: "That access code isn’t right.",
 };
 
 type Search = { error?: string; callbackUrl?: string; "check-email"?: string; setup?: string };
@@ -44,6 +46,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
   const oauth = providers.filter((p) => p.type !== "email");
   const email = providers.find((p) => p.type === "email");
   const error = orphan ? "NotOnRoster" : params.error;
+  const ownerCode = ownerCodeEnabled();
 
   return (
     <main className="grid min-h-full place-items-center px-4 py-10">
@@ -78,7 +81,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
                   Sign out and use another account
                 </Button>
               </form>
-            ) : providers.length === 0 ? (
+            ) : providers.length === 0 && !ownerCode ? (
               <p className="rounded-md bg-sunk px-3 py-2.5 text-[13px] text-muted-foreground">
                 Sign-in isn’t configured yet. An administrator needs to add Google, Microsoft or email sign-in
                 settings to the deployment (see the README).
@@ -116,6 +119,33 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
                       />
                       <Button type="submit" className="w-full">
                         Send link
+                      </Button>
+                    </form>
+                  </>
+                )}
+                {ownerCode && (
+                  <>
+                    {providers.length > 0 && (
+                      <div className="my-1 flex items-center gap-3 text-xs text-muted-foreground">
+                        <span className="h-px flex-1 bg-border" />
+                        or
+                        <span className="h-px flex-1 bg-border" />
+                      </div>
+                    )}
+                    <form action={signInWithOwnerCode.bind(null, callbackUrl)} className="flex flex-col gap-2">
+                      <label htmlFor="code" className="text-[13px] font-semibold">
+                        Owner access code
+                      </label>
+                      <input
+                        id="code"
+                        name="code"
+                        type="password"
+                        required
+                        autoComplete="current-password"
+                        className="h-10 w-full rounded-md border border-border bg-surface px-3"
+                      />
+                      <Button type="submit" variant={providers.length ? "outline" : "default"} className="w-full">
+                        Sign in as HR admin
                       </Button>
                     </form>
                   </>

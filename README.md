@@ -49,6 +49,7 @@ prototype. Its last week is anchored to the current week. **It deletes all org d
 | `AUTH_SECRET` | Auth.js session encryption. **Required.** Generate with `openssl rand -base64 32` | 3 |
 | `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | Google sign-in (enabled when both are set) | 3 |
 | `AUTH_MICROSOFT_ENTRA_ID_ID`, `AUTH_MICROSOFT_ENTRA_ID_SECRET`, `AUTH_MICROSOFT_ENTRA_ID_ISSUER` | Microsoft sign-in (enabled when ID and secret are set) | 3 |
+| `OWNER_ACCESS_CODE` | Optional. A secret of 16+ characters; typing it on the sign-in page signs in as the first HR admin. A stopgap until Google/Microsoft sign-in is set up; remove it afterwards | 3 |
 | `ALLOWED_EMAIL_DOMAINS` | Comma-separated sign-in allowlist, e.g. `arkone.com`. Unset = any domain (people must still be on the roster) | 3 |
 | `RESEND_API_KEY`, `EMAIL_FROM` | Email sign-in links (when both are set) and, in phase 5, reminder emails | 3 |
 | `CRON_SECRET` | Protects `/api/cron/*` | 5 |
@@ -83,6 +84,9 @@ only works while the database has no organization.
   `https://<your-site>/api/auth/callback/microsoft-entra-id`. Create a client secret. Set `AUTH_MICROSOFT_ENTRA_ID_ID`
   (Application ID), `AUTH_MICROSOFT_ENTRA_ID_SECRET`, and `AUTH_MICROSOFT_ENTRA_ID_ISSUER`
   (`https://login.microsoftonline.com/<tenant-id>/v2.0/`).
+- **Owner access code (simplest):** set `OWNER_ACCESS_CODE` to a long random string (16+ characters). The sign-in
+  page then shows an access-code box that signs in as the HR admin created on `/setup`. Treat it like a password and
+  remove it once real sign-in is configured.
 - **Email link:** a Resend API key and `EMAIL_FROM`. Until you verify a domain in Resend, use
   `EMAIL_FROM="Steady <onboarding@resend.dev>"`; Resend then only delivers to your own Resend account's email.
 

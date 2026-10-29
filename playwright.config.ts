@@ -5,6 +5,7 @@ import { defineConfig } from "@playwright/test";
 export const E2E_DATABASE_URL =
   process.env.E2E_DATABASE_URL ?? "postgres://postgres:postgres@localhost:5432/steady_e2e";
 export const E2E_SECRET = "e2e-test-secret-not-for-production-0123456789";
+export const E2E_OWNER_CODE = "e2e-owner-code-0123456789abcdef";
 const PORT = 3200;
 
 export default defineConfig({
@@ -23,6 +24,7 @@ export default defineConfig({
       DATABASE_URL: E2E_DATABASE_URL,
       AUTH_SECRET: E2E_SECRET,
       ALLOWED_EMAIL_DOMAINS: "example.com",
+      OWNER_ACCESS_CODE: E2E_OWNER_CODE,
     },
   },
 });
