@@ -4,8 +4,8 @@ import Google from "next-auth/providers/google";
 import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
 import Resend from "next-auth/providers/resend";
 
-// The database-free part of the Auth.js config. proxy.ts uses only this (it just
-// verifies the session token); auth.ts adds the adapter and the roster check.
+// The database-free part of the Auth.js config; auth.ts adds the adapter, the
+// owner access code and the roster check.
 
 /** Providers are enabled by their env vars, so an instance can run with any subset. */
 export function configuredProviders(): Provider[] {
@@ -22,7 +22,7 @@ export function configuredProviders(): Provider[] {
 }
 
 export const authConfig = {
-  // JWT sessions so proxy.ts can check them without a database round trip.
+  // JWT sessions: no database round trip to read a session.
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   trustHost: true,
   providers: configuredProviders(),

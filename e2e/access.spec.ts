@@ -8,6 +8,18 @@ test.describe("access control", () => {
     await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
   });
 
+  test("a session cookie the server can't read lands on sign-in instead of looping", async ({ page, context }) => {
+    for (const name of ["authjs.session-token", "__Secure-authjs.session-token"]) {
+      await context.clearCookies();
+      const secure = name.startsWith("__Secure-");
+      await context.addCookies([{ name, value: "not-a-valid-token", domain: "localhost", path: "/", secure }]);
+      const response = await page.goto("/dashboard");
+      expect(response?.status()).toBe(200);
+      await expect(page).toHaveURL(/\/sign-in/);
+      await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+    }
+  });
+
   test("an employee cannot open the dashboard, feed or people admin", async ({ page, context }) => {
     const employee = await personByRole("employee");
     await signInAs(context, employee.email);
