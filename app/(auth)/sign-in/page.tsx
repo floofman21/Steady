@@ -17,6 +17,11 @@ const ERRORS: Record<string, string> = {
   DomainNotAllowed: "That email isn’t from an allowed domain. Sign in with your work account.",
   NoEmail: "Your account didn’t share an email address, so we couldn’t match it to the roster.",
   Verification: "That sign-in link has expired or was already used. Request a new one.",
+  // Auth.js reports any server-side failure as "Configuration"; for email links that is
+  // almost always the email service refusing to send.
+  Configuration:
+    "Steady couldn’t send or complete the sign-in. If you asked for an email link, the email service refused it: check the email settings, or try again shortly.",
+  AccessDenied: "This account isn’t allowed to sign in to Steady.",
 };
 
 type Search = { error?: string; callbackUrl?: string; "check-email"?: string; setup?: string };
