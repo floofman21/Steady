@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { AddPersonSheet } from "@/components/people/add-person-sheet";
+import { ImportSheet } from "@/components/people/import-sheet";
+import { RosterTable } from "@/components/people/roster-table";
+import { TeamsCard } from "@/components/people/teams-card";
 import { SampleDataButton } from "@/components/sample/sample-data-button";
-import { ComingSoon } from "@/components/shared/coming-soon";
 import { PageHeader } from "@/components/shared/page-header";
-import { Card } from "@/components/ui/card";
 import { isHrAdmin } from "@/lib/permissions";
 import { hasSampleData } from "@/lib/queries";
+import { getRoster } from "@/lib/roster";
 import { getViewer } from "@/lib/viewer";
 
 export const metadata: Metadata = { title: "People" };
@@ -14,25 +17,35 @@ export default async function PeoplePage() {
   const viewer = await getViewer();
   if (!viewer) redirect("/sign-in");
   if (!isHrAdmin(viewer)) redirect("/check-in");
-  const sample = await hasSampleData(viewer.org.id);
+  const [roster, sample] = await Promise.all([getRoster(viewer.org.id), hasSampleData(viewer.org.id)]);
+
   return (
     <>
-      <PageHeader title="People">Manage the roster, roles and teams.</PageHeader>
-      <Card className="mb-4 flex flex-col items-start gap-3 p-[22px] sm:flex-row sm:items-center">
-        <div className="flex-1">
-          <h2 className="mb-0.5 font-semibold">Sample data</h2>
-          <p className="max-w-[60ch] text-muted-foreground">
-            {sample
-              ? "42 sample people (SMP- IDs) with 8 weeks of check-ins are loaded. Removing them leaves your real people and check-ins untouched."
-              : "Add 42 sample people across 7 departments with 8 weeks of check-ins to explore the dashboard. You can remove them at any time."}
-          </p>
+      <div className="flex flex-wrap items-start justify-between gap-x-4">
+        <PageHeader title="People">
+          Everyone on the roster can sign in with their work email. Deactivated people can’t sign in and don’t get
+          reminders; their history is kept.
+        </PageHeader>
+        <div className="mb-5 flex gap-2.5">
+          <AddPersonSheet teams={roster.teams} />
+          <ImportSheet />
         </div>
+      </div>
+
+      <RosterTable roster={roster} viewerId={viewer.person.id} />
+      <TeamsCard roster={roster} />
+
+      <section
+        aria-label="Sample data"
+        className="flex flex-col items-start gap-3 rounded-lg border border-dashed border-border px-4 py-3.5 sm:flex-row sm:items-center"
+      >
+        <p className="flex-1 text-[13px] text-muted-foreground">
+          {sample
+            ? "Sample data is loaded (people marked Sample, SMP- IDs). Removing it leaves your real people and check-ins untouched."
+            : "Want to explore first? Load 42 sample people with 8 weeks of check-ins; remove them any time."}
+        </p>
         <SampleDataButton mode={sample ? "remove" : "load"} />
-      </Card>
-      <ComingSoon
-        phase={5}
-        items={["Roster table with role and team editing", "CSV import with a row-level error preview"]}
-      />
+      </section>
     </>
   );
 }

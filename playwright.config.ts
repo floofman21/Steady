@@ -6,6 +6,7 @@ export const E2E_DATABASE_URL =
   process.env.E2E_DATABASE_URL ?? "postgres://postgres:postgres@localhost:5432/steady_e2e";
 export const E2E_SECRET = "e2e-test-secret-not-for-production-0123456789";
 export const E2E_OWNER_CODE = "e2e-owner-code-0123456789abcdef";
+export const E2E_CRON_SECRET = "e2e-cron-secret-0123456789";
 const PORT = 3200;
 
 export default defineConfig({
@@ -25,6 +26,7 @@ export default defineConfig({
       AUTH_SECRET: E2E_SECRET,
       ALLOWED_EMAIL_DOMAINS: "example.com",
       OWNER_ACCESS_CODE: E2E_OWNER_CODE,
+      CRON_SECRET: E2E_CRON_SECRET,
     },
   },
 });

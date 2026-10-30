@@ -3,8 +3,8 @@
 Weekly wellbeing check-ins for employees, and a team health dashboard for managers and HR.
 Built from `Steady_Build_Spec.md`; the single-file prototype is the visual and behavioral reference.
 
-**Status:** Phases 1–4 — foundation, weekly check-in, sign-in and permissions, Health Dashboard and Check-in Feed.
-Phase 5 (People admin, CSV import, reminder and digest emails) is next.
+**Status:** all five phases built: weekly check-in, sign-in and permissions, Health Dashboard and Check-in Feed,
+People admin with CSV import, and weekly reminder and digest emails.
 
 ## Stack
 
@@ -51,8 +51,9 @@ prototype. Its last week is anchored to the current week. **It deletes all org d
 | `AUTH_MICROSOFT_ENTRA_ID_ID`, `AUTH_MICROSOFT_ENTRA_ID_SECRET`, `AUTH_MICROSOFT_ENTRA_ID_ISSUER` | Microsoft sign-in (enabled when ID and secret are set) | 3 |
 | `OWNER_ACCESS_CODE` | Optional. A secret of 16+ characters; typing it on the sign-in page signs in as the first HR admin. A stopgap until Google/Microsoft sign-in is set up; remove it afterwards | 3 |
 | `ALLOWED_EMAIL_DOMAINS` | Comma-separated sign-in allowlist, e.g. `arkone.com`. Unset = any domain (people must still be on the roster) | 3 |
-| `RESEND_API_KEY`, `EMAIL_FROM` | Email sign-in links (when both are set) and, in phase 5, reminder emails | 3 |
-| `CRON_SECRET` | Protects `/api/cron/*` | 5 |
+| `RESEND_API_KEY`, `EMAIL_FROM` | Email sign-in links (when both are set), weekly reminders and manager digests | 3, 5 |
+| `CRON_SECRET` | Protects `/api/cron/*`; the scheduled function sends it. Any long random string | 5 |
+| `APP_URL` | Optional. Site address used in email links; defaults to Netlify's `URL` | 5 |
 
 ## Deploying to Netlify
 
@@ -68,8 +69,7 @@ The database is an external Postgres on [Neon](https://neon.tech) (free tier is 
 4. **Deploy.** Production deploys run `scripts/netlify-build.mjs`: `drizzle-kit migrate`, then `next build`.
    Deploy previews skip migrations. If previews should not touch production data, give the *Deploy Previews*
    context its own `DATABASE_URL` (a Neon branch).
-5. Add the remaining env vars above as each phase needs them. Phase 5's weekly jobs will run as Netlify Scheduled
-   Functions.
+5. Add the remaining env vars above as each phase needs them.
 
 ## Sign-in
 
@@ -100,6 +100,34 @@ them; private notes never leave the server for anyone else. Team and department 
 writes `audit_log`. `organizations.managers_see_individual_scores` (default on) limits managers to aggregates and
 at-risk flags when turned off.
 
+## People and roster import
+
+HR admins manage the roster on **People**: change a person's team or role, deactivate or reactivate them, delete all
+of a person's check-ins on request (permanent, recorded in `audit_log`), add one person, add teams and set each
+team's manager. You can't remove your own HR admin role or deactivate yourself.
+
+**Import CSV** takes `employee_code,name,email,department,team,manager_email,role` (any column order). People are
+matched by `employee_code`: new codes are added, existing ones updated and re-activated; departments and teams are
+created as needed; `manager_email` sets the team's manager (they need the manager or HR admin role). The upload is
+validated first (`POST /api/admin/import`) and shows every bad row with its line number; nothing is written until
+you confirm (`commit=true`), and then valid rows are applied in one transaction. People missing from the file are
+left alone.
+
+## Weekly emails
+
+`netlify/functions/steady-jobs.mts` is a Netlify Scheduled Function that runs hourly (Netlify schedules are UTC)
+and calls the two job routes with `CRON_SECRET`. Each route checks the organization's own time zone, so they act
+at the right local time all year:
+
+- **Reminders**, Monday 09:00: every active person without a check-in this week. Sample people are skipped.
+- **Manager digest**, Thursday 09:00: each manager gets their reports' participation and how many are at risk.
+  Counts only; no names or scores in the email.
+
+`reminders_log` records each send, so a person gets at most one of each per week. To check without sending:
+`curl -H "Authorization: Bearer $CRON_SECRET" "https://<site>/api/cron/reminders?force=1&dryRun=1"`. Without the
+secret both routes return 401. Resend's test sender only delivers to your own Resend address; to email staff,
+verify your company's domain in Resend and set `EMAIL_FROM` to an address on it.
+
 ## Sample data
 
 HR admins can **Load sample data** from the empty dashboard or the People page: 42 people across 7 departments
@@ -116,7 +144,10 @@ app/
   (app)/dashboard/       Health Dashboard
   (app)/check-in/        Weekly Check-in + submitCheckin server action
   (app)/feed/            Check-in Feed
-  (app)/admin/people/    Roster + CSV import (HR admin)
+  (app)/admin/people/    Roster, teams, CSV import (HR admin)
+  api/admin/import/      CSV preview / commit
+  api/cron/reminders/    Weekly reminder job
+  api/cron/digest/       Manager digest job
 lib/
   db/schema.ts           Drizzle schema
   scoring.ts             Index math (pure)
@@ -126,6 +157,9 @@ lib/
   permissions.ts         Who can see whom (visibility matrix, notes, audit log)
   dashboard.ts           Dashboard, person drawer and feed loaders
   sample.ts              Load/remove sample data
+  roster-import.ts       CSV validation (pure); roster-import-apply.ts writes
+  jobs.ts, schedule.ts   Reminder and digest jobs; when they're due
+  email.ts               Resend + email layout
   queries.ts             Server-side reads
 components/
   ui/                    shadcn/ui components
@@ -138,5 +172,6 @@ tests/                   Vitest
 e2e/                     Playwright
 auth.ts, auth.config.ts  Auth.js (full config / database-free part used by proxy.ts)
 proxy.ts                 Redirects signed-out visitors to /sign-in
+netlify/functions/       Hourly scheduled function for the weekly emails
 drizzle/                 Migrations
 ```
