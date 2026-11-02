@@ -1,11 +1,11 @@
 export function Logo({ className = "size-[34px]" }: { className?: string }) {
   return (
-    <div className={`grid flex-none place-items-center rounded-[9px] bg-brand ${className}`}>
+    <div className={`grid flex-none place-items-center rounded-[9px] bg-brand-bright ${className}`}>
       <svg
         viewBox="0 0 24 24"
         className="size-[18px]"
         fill="none"
-        stroke="var(--on-accent)"
+        stroke="#ffffff"
         strokeWidth="2.2"
         strokeLinecap="round"
         strokeLinejoin="round"

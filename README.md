@@ -134,6 +134,14 @@ HR admins can **Load sample data** from the empty dashboard or the People page: 
 with 8 weeks of check-ins, marked `is_sample`, using `SMP-` IDs and `example.com` emails (they can't sign in).
 **Remove sample data** deletes exactly those people, their check-ins, and the sample departments and teams.
 
+## Brand colors
+
+All colors are tokens at the top of `app/globals.css` (light under `:root`, dark under `.dark`): white surfaces,
+light blue (`--accent-bright`, with `--accent-base` as the deeper blue for buttons and links), orange (`--orange`)
+and neutral greys. Status bands are blue (healthy), orange (watch) and red (at risk); `--warn-text` is a darker
+orange for text. Chart lines use `--series-1…4`, checked for color-blind separation. To use exact brand values,
+change the tokens there.
+
 ## Layout
 
 ```

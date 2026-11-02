@@ -26,15 +26,15 @@ const escape = (s: string) =>
 
 /** A plain, branded email body. `paragraphs` are text; the button links to `cta.href`. */
 export function layout(opts: { heading: string; paragraphs: string[]; cta: { label: string; href: string } }) {
-  const html = `<!doctype html><html><body style="margin:0;background:#F5F6F4;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;color:#1A201D">
+  const html = `<!doctype html><html><body style="margin:0;background:#F6F8FB;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;color:#1A2433">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFFFF;border:1px solid #E2E6E2;border-radius:10px">
-<tr><td style="padding:28px 28px 8px"><div style="font-weight:700;font-size:15px;color:#2F5D50">Steady</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFFFF;border:1px solid #E1E7EF;border-radius:10px">
+<tr><td style="padding:28px 28px 8px"><div style="font-weight:700;font-size:15px;color:#1A73B5">Steady</div>
 <h1 style="font-size:22px;line-height:1.3;margin:14px 0 6px">${escape(opts.heading)}</h1></td></tr>
-${opts.paragraphs.map((p) => `<tr><td style="padding:4px 28px;font-size:15px;line-height:1.55;color:#3a423e">${escape(p)}</td></tr>`).join("")}
-<tr><td style="padding:20px 28px 28px"><a href="${escape(opts.cta.href)}" style="display:inline-block;background:#2F5D50;color:#FFFFFF;text-decoration:none;font-weight:600;padding:11px 18px;border-radius:8px">${escape(opts.cta.label)}</a></td></tr>
+${opts.paragraphs.map((p) => `<tr><td style="padding:4px 28px;font-size:15px;line-height:1.55;color:#3A4554">${escape(p)}</td></tr>`).join("")}
+<tr><td style="padding:20px 28px 28px"><a href="${escape(opts.cta.href)}" style="display:inline-block;background:#1A73B5;color:#FFFFFF;text-decoration:none;font-weight:600;padding:11px 18px;border-radius:8px">${escape(opts.cta.label)}</a></td></tr>
 </table>
-<p style="font-size:12px;color:#69736E;margin:16px 0 0">You’re getting this because you’re on your organization’s Steady roster.</p>
+<p style="font-size:12px;color:#5F6B7A;margin:16px 0 0">You’re getting this because you’re on your organization’s Steady roster.</p>
 </td></tr></table></body></html>`;
   const text = [opts.heading, "", ...opts.paragraphs, "", `${opts.cta.label}: ${opts.cta.href}`].join("\n");
   return { html, text };

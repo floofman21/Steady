@@ -16,7 +16,7 @@ export const BAND_LABEL: Record<Band, string> = {
 
 export const BAND_TEXT: Record<Band, string> = {
   healthy: "text-good",
-  watch: "text-warn",
+  watch: "text-warn-text",
   at_risk: "text-bad",
 };
 

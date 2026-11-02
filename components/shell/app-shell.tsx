@@ -137,8 +137,10 @@ function SidebarContent({
                     onClick={onNavigate}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex items-center justify-between rounded-[7px] px-2.5 py-[7px] text-muted-foreground hover:bg-surface hover:text-foreground",
-                      active && "bg-surface font-semibold text-foreground shadow-card",
+                      "relative flex items-center justify-between rounded-[7px] px-2.5 py-[7px] text-muted-foreground hover:bg-surface hover:text-foreground",
+                      // Active page: white pill plus an orange marker on the nav rail.
+                      active &&
+                        "bg-surface font-semibold text-foreground shadow-card before:absolute before:top-1.5 before:bottom-1.5 before:-left-[12px] before:w-[3px] before:rounded-full before:bg-orange",
                     )}
                   >
                     {item.label}

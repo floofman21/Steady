@@ -8,31 +8,35 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Prototype tokens — light */
-  --bg: #f5f6f4;
+  /* Brand tokens — light. White, light blue, orange and grey; no green.
+     Status bands run blue (healthy) → orange (watch) → red (at risk). */
+  --bg: #f6f8fb;
   --surface: #ffffff;
-  --sunk: #eef0ed;
-  --fg: #1a201d;
-  --muted: #69736e;
-  --faint: #9aa39e;
-  --line: #e2e6e2;
-  --accent-base: #2f5d50;
-  --accent-soft: #e3eeea;
+  --sunk: #eef2f7;
+  --fg: #1a2433;
+  --muted: #5f6b7a;
+  --faint: #98a2b0;
+  --line: #e1e7ef;
+  --accent-base: #1a73b5; /* light-blue family, deep enough for white text (5:1) */
+  --accent-bright: #4fa8e8; /* the light blue itself: logo, highlights */
+  --accent-soft: #e5f2fc;
   --on-accent: #ffffff;
-  --good: #2e9e5b;
-  --warn: #d49b12;
-  --bad: #cf4536;
-  --good-soft: #e4f4ea;
-  --warn-soft: #fbf1d6;
-  --bad-soft: #fbe6e3;
-  --shadow-card: 0 1px 2px rgba(20, 30, 25, 0.05), 0 1px 1px rgba(20, 30, 25, 0.03);
-  --scrim: rgba(10, 15, 12, 0.35);
+  --orange: #f08a24;
+  --good: #1a73b5;
+  --warn: #f08a24; /* brand orange: dots, sparklines, fills */
+  --warn-text: #b45309; /* darker orange for text (5:1 on white) */
+  --bad: #cc3b3b;
+  --good-soft: #e5f2fc;
+  --warn-soft: #fdf0e1;
+  --bad-soft: #fbe8e8;
+  --shadow-card: 0 1px 2px rgba(20, 30, 45, 0.06), 0 1px 1px rgba(20, 30, 45, 0.03);
+  --scrim: rgba(12, 18, 28, 0.35);
   /* Chart series (categorical, validated for CVD separation on these surfaces).
      Status colors (good/warn/bad) are reserved for bands, never series identity. */
   --series-1: #2a78d6;
   --series-2: #eb6834;
-  --series-3: #1baf7a;
-  --series-4: #eda100;
+  --series-3: #6250d6;
+  --series-4: #e87ba4;
 
   /* shadcn aliases */
   --radius: 10px;
@@ -61,28 +65,31 @@
 }
 
 .dark {
-  /* Prototype tokens — dark */
-  --bg: #111513;
-  --surface: #191e1c;
-  --sunk: #1f2522;
-  --fg: #e7ece9;
-  --muted: #97a39d;
-  --faint: #6e7974;
-  --line: #2a322e;
-  --accent-base: #86c2ad;
-  --accent-soft: #22332d;
-  --on-accent: #0f1a16;
-  --good: #4fc57d;
-  --warn: #e6b73e;
-  --bad: #f06b5c;
-  --good-soft: #1c3326;
-  --warn-soft: #352c14;
-  --bad-soft: #3a1f1c;
+  /* Brand tokens — dark */
+  --bg: #0f141b;
+  --surface: #161d26;
+  --sunk: #1c2430;
+  --fg: #e6ecf3;
+  --muted: #9aa6b4;
+  --faint: #6b7684;
+  --line: #2a3441;
+  --accent-base: #6cb8ec;
+  --accent-bright: #4fa8e8;
+  --accent-soft: #1b2d40;
+  --on-accent: #0f1a26;
+  --orange: #f29b4b;
+  --good: #6cb8ec;
+  --warn: #f5a524;
+  --warn-text: #f5a524;
+  --bad: #e5484d;
+  --good-soft: #1b2d40;
+  --warn-soft: #3a2816;
+  --bad-soft: #3b1e1e;
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
   --series-1: #3987e5;
   --series-2: #d95926;
-  --series-3: #199e70;
-  --series-4: #c98500;
+  --series-3: #9085e9;
+  --series-4: #d55181;
 
   color-scheme: dark;
 }
@@ -115,9 +122,12 @@
   --color-faint: var(--faint);
   --color-brand: var(--accent-base);
   --color-brand-soft: var(--accent-soft);
+  --color-brand-bright: var(--accent-bright);
+  --color-orange: var(--orange);
   --color-on-brand: var(--on-accent);
   --color-good: var(--good);
   --color-warn: var(--warn);
+  --color-warn-text: var(--warn-text);
   --color-bad: var(--bad);
   --color-good-soft: var(--good-soft);
   --color-warn-soft: var(--warn-soft);
