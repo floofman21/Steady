@@ -46,3 +46,13 @@ export async function hasSampleData(orgId: string) {
     .limit(1);
   return Boolean(row);
 }
+
+/** The latest week any sample person checked in, or null when there's no sample data. */
+export async function sampleLatestWeek(orgId: string) {
+  const [row] = await db
+    .select({ week: sql<string | null>`max(${schema.checkins.weekStart})` })
+    .from(schema.checkins)
+    .innerJoin(schema.people, eq(schema.people.id, schema.checkins.personId))
+    .where(and(eq(schema.people.orgId, orgId), eq(schema.people.isSample, true)));
+  return row?.week ?? null;
+}

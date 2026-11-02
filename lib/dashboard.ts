@@ -144,11 +144,15 @@ export async function getDashboard(viewer: Viewer, params: DashboardParams) {
     const list = people.map((p) => p.series[w]).filter((x): x is Indices => x !== null);
     return { n: list.length, mean: meanIndices(list) };
   });
-  const enough = weekly[cur].n >= minGroupSize;
+  // Results week: this week once it has enough responses; until then (e.g. early on a Monday)
+  // the most recent week that did, so the cards don't go blank at the start of every week.
+  let ref = cur;
+  while (ref > 0 && weekly[ref].n < minGroupSize) ref--;
+  const hasResults = weekly[ref].n >= minGroupSize;
   const kpis: Kpi[] = INDICES.map(({ key }) => {
     const series = weekly.map((wk) => (wk.n >= minGroupSize && wk.mean ? wk.mean[key] : null));
-    const value = series[cur];
-    const prev = series[cur - 1];
+    const value = hasResults ? series[ref] : null;
+    const prev = ref > 0 ? series[ref - 1] : null;
     return { key, value, delta: value != null && prev != null ? value - prev : null, series };
   });
 
@@ -165,7 +169,8 @@ export async function getDashboard(viewer: Viewer, params: DashboardParams) {
     }
     return [...groups.entries()]
       .map(([id, ms]): GroupRow => {
-        const respondents = ms.filter((m) => m.series[cur]).length;
+        // The minimum group size applies to responses in the results week.
+        const respondents = ms.filter((m) => m.series[ref]).length;
         const mean = meanIndices(ms.flatMap((m) => (m.latest ? [m.latest.indices] : [])));
         const shown = respondents >= minGroupSize && mean;
         return {
@@ -244,7 +249,9 @@ export async function getDashboard(viewer: Viewer, params: DashboardParams) {
     individual,
     minGroupSize,
     participation: { checkedIn, active, pct: active ? Math.round((checkedIn / active) * 100) : 0 },
-    kpisShown: enough,
+    /** The week the cards and breakdown describe; null when no week has enough responses. */
+    resultsWeek: hasResults ? weeks[ref] : null,
+    resultsAreCurrent: hasResults && ref === cur,
     kpis,
     breakdown: { needsAttention, teams, departments },
     departmentNames: [...new Set(people.map((p) => p.department).filter((d): d is string => !!d))].sort(),

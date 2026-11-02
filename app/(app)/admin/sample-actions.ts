@@ -41,3 +41,15 @@ export async function removeSampleDataAction(): Promise<SampleResult> {
   revalidatePath("/", "layout");
   return { ok: true, message: `Removed ${r.people} sample people and their check-ins.` };
 }
+
+/** HR admin: re-creates the sample data so its latest week is the current week. */
+export async function refreshSampleDataAction(): Promise<SampleResult> {
+  const viewer = await requireHrAdmin();
+  if (!viewer) return { ok: false, error: "Only HR admins can refresh sample data." };
+  const r = await db.transaction(async (tx) => {
+    await removeSampleData(tx, viewer.org.id);
+    return insertSampleData(tx, { orgId: viewer.org.id, timezone: viewer.org.timezone, codePrefix: "SMP-" });
+  });
+  revalidatePath("/", "layout");
+  return { ok: true, message: `Sample data now runs through this week (${r.checkins} check-ins).` };
+}

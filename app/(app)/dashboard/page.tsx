@@ -13,8 +13,9 @@ import { Card } from "@/components/ui/card";
 import { getDashboard, getPerson } from "@/lib/dashboard";
 import { parseParams } from "@/lib/dashboard-params";
 import { canSeeDashboard, isHrAdmin } from "@/lib/permissions";
-import { hasAnyCheckins, hasSampleData } from "@/lib/queries";
+import { hasAnyCheckins, sampleLatestWeek } from "@/lib/queries";
 import { getViewer } from "@/lib/viewer";
+import { formatWeekShort } from "@/lib/week";
 
 export const metadata: Metadata = { title: "Health Dashboard" };
 
@@ -52,7 +53,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const [data, person, sample] = await Promise.all([
     getDashboard(viewer, params),
     params.person ? getPerson(viewer, params.person) : null,
-    hr ? hasSampleData(viewer.org.id) : false,
+    hr ? sampleLatestWeek(viewer.org.id) : null,
   ]);
   const { participation: p } = data;
 
@@ -67,7 +68,11 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
       {sample && (
         <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-dashed border-border bg-surface px-4 py-2.5 text-[13px] text-muted-foreground">
           <FlaskConical className="size-4 text-brand" aria-hidden="true" />
-          <span className="flex-1">Sample data is loaded. Sample people use SMP- IDs and can’t sign in.</span>
+          <span className="flex-1">
+            Sample data is loaded. Sample people use SMP- IDs and can’t sign in.
+            {sample < data.current && ` Their check-ins end with the week of ${formatWeekShort(sample)}.`}
+          </span>
+          {sample < data.current && <SampleDataButton mode="refresh" variant="link" />}
           <SampleDataButton mode="remove" variant="link" />
         </div>
       )}
@@ -78,10 +83,25 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
         </p>
       )}
 
+      {data.resultsWeek && !data.resultsAreCurrent && (
+        <p className="mb-4 rounded-lg bg-sunk px-4 py-2.5 text-[13px] text-muted-foreground">
+          Fewer than {data.minGroupSize} people have checked in so far this week, so these results are from the week of{" "}
+          <b className="font-semibold text-foreground">{formatWeekShort(data.resultsWeek)}</b>. They switch to this
+          week once {data.minGroupSize} people have checked in.
+        </p>
+      )}
+
       <div className="mb-6 grid gap-4 min-[1100px]:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
         <div className="grid grid-cols-1 gap-4 min-[521px]:grid-cols-2">
           {data.kpis.map((k) => (
-            <KpiCard key={k.key} metric={k.key} value={k.value} delta={k.delta} series={k.series} />
+            <KpiCard
+              key={k.key}
+              metric={k.key}
+              value={k.value}
+              delta={k.delta}
+              series={k.series}
+              compareLabel={data.resultsAreCurrent ? "vs last week" : "vs the week before"}
+            />
           ))}
         </div>
         <Breakdown breakdown={data.breakdown} individual={data.individual} minGroupSize={data.minGroupSize} />

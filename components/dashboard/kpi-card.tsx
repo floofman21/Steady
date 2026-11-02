@@ -14,7 +14,9 @@ export function KpiCard({
   value,
   delta,
   series,
+  compareLabel = "vs last week",
 }: {
+  compareLabel?: string;
   metric: IndexKey;
   value: number | null;
   delta: number | null;
@@ -52,15 +54,15 @@ export function KpiCard({
             {value == null ? (
               "Not enough responses to display"
             ) : delta == null ? (
-              "No data for last week"
+              `No data for the week before`
             ) : (
               <>
                 <b className={cn("num font-semibold", !flat && (better ? "text-good" : "text-bad"))}>
                   {delta >= 0 ? "+" : ""}
                   {delta.toFixed(1)} pts
                 </b>
-                <span className="sr-only">{flat ? ", unchanged" : better ? ", better" : ", worse"}</span> vs last
-                week
+                <span className="sr-only">{flat ? ", unchanged" : better ? ", better" : ", worse"}</span>{" "}
+                {compareLabel}
               </>
             )}
           </div>
